@@ -5,7 +5,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
-  title: "Sign In | Passweird",
+  title: "Sign In | CXG - KeyFort",
   description: "Password manager. built using nextjs",
 };
 

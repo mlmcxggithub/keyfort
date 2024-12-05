@@ -9,7 +9,7 @@ import { SessionProvider } from "next-auth/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata: Metadata = {
-  title: "Manage your password easily using Passweird",
+  title: "Manage your password easily using CXG - KeyFort",
   description: "Password manager. built using nextjs",
 };
 
