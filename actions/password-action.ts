@@ -16,23 +16,30 @@ export const getPasswordCollection = async (param: {
 }) => {
   try {
     const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      throw new Error("User not authenticated");
+    }
+
+    // Construct filters using Prisma's `PasswordWhereInput` type
+    const filters: Prisma.PasswordWhereInput = {
+      AND: [
+        { userId: currentUser.id },
+        ...(param.category ? [{ category: { slug: param.category } }] : []),
+        ...(param.search
+          ? [
+              {
+                websiteName: {
+                  contains: param.search,
+                  mode: Prisma.QueryMode.insensitive, 
+                },
+              },
+            ]
+          : []),
+      ],
+    };
 
     const passwords = await prisma.password.findMany({
-      where: {
-        AND: [
-          {
-            userId: currentUser?.id,
-          },
-          {
-            category: { slug: param.category },
-          },
-          {
-            websiteName: {
-              contains: param.search,
-            },
-          },
-        ],
-      },
+      where: filters,
       include: {
         category: true,
       },
@@ -41,12 +48,14 @@ export const getPasswordCollection = async (param: {
       },
     });
 
+    console.log("Retrieved Passwords:", passwords);
     return passwords;
   } catch (error) {
-    console.error(error);
+    console.error("Error fetching password collection:", error);
     throw new Error("Failed to get password collection");
   }
 };
+
 
 export const addNewPassword = async (values: TPasswordSchema) => {
   const currentUser = await getCurrentUser();

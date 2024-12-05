@@ -10,20 +10,46 @@ import SearchPassword from "@/components/search-password";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Terminal } from "lucide-react";
 
-interface DashboarPageProps {
-  searchParams: {
+interface DashboardPageProps {
+  searchParams: Promise<{
     category?: string;
     search?: string;
-  };
+  }>;
 }
 
-const DashboardPage = async ({
-  searchParams: { category, search },
-}: DashboarPageProps) => {
-  const [passwordsCollection, categories, total] = await Promise.all([
+interface PasswordCollection {
+  id: string;
+  websiteName: string;
+  categoryId: string;
+  createdAt: Date;
+  updatedAt: Date;
+  password: string;
+  email: string | null;
+  username: string | null;
+  url: string | null;
+  userId: string;
+}
+
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const DashboardPage = async ({ searchParams }: DashboardPageProps) => {
+  const resolvedSearchParams = await searchParams; // Resolve the Promise
+
+  // Explicitly type the destructured result
+  const [passwordsCollection, categories, total]: [
+    PasswordCollection[],
+    Category[],
+    number,
+  ] = await Promise.all([
     getPasswordCollection({
-      category: category as string,
-      search: search as string,
+      category: resolvedSearchParams.category || "",
+      search: resolvedSearchParams.search || "",
     }),
     getCategories(),
     totalUserPasswordSaved(),
@@ -33,7 +59,7 @@ const DashboardPage = async ({
     <>
       <Header
         title="All Passwords"
-        description="Safety manage and access your passwords."
+        description="Safely manage and access your passwords."
         className="mt-5"
       />
 
@@ -52,13 +78,39 @@ const DashboardPage = async ({
             </AlertDescription>
           </Alert>
         ) : (
-          passwordsCollection.map((collection, index) => (
-            <PasswordCollectionCard
-              key={index}
-              password={collection}
-              categories={categories}
-            />
-          ))
+          passwordsCollection.map((collection) => {
+            const categoryObject = categories.find(
+              (cat) => cat.id === collection.categoryId,
+            );
+
+            if (!categoryObject) {
+              console.error(
+                `Category with ID ${collection.categoryId} not found`,
+              );
+            }
+
+            return (
+              <PasswordCollectionCard
+                key={collection.id}
+                password={{
+                  ...collection,
+                  category: categoryObject || {
+                    id: collection.categoryId,
+                    name: "Unknown",
+                    slug: "unknown",
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                  },
+                  createdAt: new Date(collection.createdAt),
+                  updatedAt: new Date(collection.updatedAt),
+                  email: collection.email ?? null,
+                  username: collection.username ?? null,
+                  url: collection.url ?? null,
+                }}
+                categories={categories}
+              />
+            );
+          })
         )}
       </div>
     </>
