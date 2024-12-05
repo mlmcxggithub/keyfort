@@ -32,7 +32,7 @@ const SignUpForm = () => {
       username: "",
       email: "",
       password: "",
-      acceptTerms: false,
+      acceptTerms: true,
     },
   });
 
@@ -123,7 +123,7 @@ const SignUpForm = () => {
           )}
         />
 
-        <FormField
+        {/* <FormField
           control={form.control}
           name="acceptTerms"
           render={({ field }) => (
@@ -143,7 +143,7 @@ const SignUpForm = () => {
               </div>
             </FormItem>
           )}
-        />
+        /> */}
 
         <Button type="submit" className="w-full" disabled={isPending}>
           {isPending ? "Register..." : "Register"}
